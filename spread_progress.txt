@@ -1,0 +1,295 @@
+#coding:gb18030
+import init_data
+import copy
+from numpy import random
+from init_data import g_deta, g_speed
+from init_data import g_print_max_people
+from init_data import g_spread_rate
+from math import e
+
+def uniformity_probability_simulation(probability):  #根据产生的随机数，结合节点被感染的可能，来判断节点被感染？或者不被感染
+    """
+    uniformity_probability_simulation by random function
+    """
+    test_v = random.uniform(0,1)   #产生一个随机数，如果随机数小于被感染概率，则该点被感染，如果大于，则不被感染
+    if  test_v > probability:
+        return 0
+    else :
+        return 1
+
+
+def namida_update(L_M_R, L_S, deta = 0.5):   
+    #第一个参数表示节点间的关系情况，第二个参数表示被感染情况，为1的是已经被感染的种子节点。第三个参数，还不知道啥意思。。。
+    """
+    calulate namida[i] for each people  #计算某个值。。。。
+    namida[i] = 1 - (1-deta)*((1-Qi)**Ni)
+    Qi = all_spread_around_your/all relative node around you    你周围已经被感染的节点的数量
+    Ni = numbers_spread_around_your    你周围节点的数量
+    """
+    n = len(L_M_R)  #节点数量
+    L_namida = [0]*n   #初始化一个数组，全部为0，用于存放每个节点被感染的概率
+    L_degree = [len(item) for item in L_M_R]  #计算每个节点的度，存放到一个list中
+    max_degree = max(L_degree)   #度最大的值，这个地方不知道要这个值干嘛？？？？
+    for x in range(n):
+        if L_S[x] == init_data.IGO:   #如果这个节点还没有被感染
+            tmp_sp_ratio = 0.00           #设置spread几率？？？
+            tmp_relative = len(L_M_R[x])   #获取这个节点的度
+            tmp_sp_count= 0            #设置该节点相连的节点中，种子的数量？？？
+            for y in range(tmp_relative):
+                if L_S[L_M_R[x][y]] == init_data.SPREAD:   #如果与当前节点相连接的节点中，有种子节点
+                    tmp_sp_count +=1           #当前节点被传播的次数+1
+            if tmp_relative != 0 :                 #如果当前节点的度不为0
+                tmp_sp_ratio = (tmp_sp_count+0.0)/tmp_relative    #计算当年节点被传染的概率，被传播次数/度
+            L_namida[x] = 1-(1-(1-float(L_degree[x])/float(max_degree))*deta)*((1-tmp_sp_ratio)**tmp_sp_count)
+    if len(L_namida) < g_print_max_people :
+        #print "namida  每个节点被感染的概率 :"  #（与该节点直接连接的种子数量，以及该节点的度。。。等有关）
+        #print L_namida
+        test1_2=1
+    return L_namida
+
+def check_list(list_temp):  #校验状态列表中是否还有没有感染的节点，如果有则返回0，没有则返回1
+    for x in list_temp:
+        if x==0:
+           return 0
+    return 1
+
+def statu_update(L_Statu ,L_namida,L_M_relative,L_Statu_sp,iter_time1,arf,deta ):#deta = 0.1 新函数
+    #参数1，所有节点中，种子节点的情况。参数2，所有节点被感染的概率，参数3，节点间的关系情况。参数4，种子节点的位置。参数6，迭代次数。。。后面两个参数还没看懂。。
+    #参数arf表示已经被感染过的节点，再次被感染的概率,deta，节点重要性
+    #calulate status_change[i] for each people
+    #L_M_relative : all people's relative with other people  节点间的关系情况
+    #L_namida : all people's namida   所有节点被感染的概率
+    #L_Statu : all people ' statu    所有节点的状态
+    #L_Statu_sp:  list statu = SPREAD people in status    种子节点的位置
+    
+    L_R = []           #存储迭代次数、还存储最终感染率，传播速度、传播过程
+    speed_stiff = 0.0   #？？？？
+    l_speed =[]   #没弄明白这个的含义
+    L_video = []  #传播过程状态存储
+    g_spread_rate=[] #全局变量，每次传播的传播率，假设传10次
+    for iter_time in range(iter_time1):  #迭代循环
+        
+        L_tmp = copy.deepcopy(L_Statu_sp)  #种子节点列表，获取种子节点的位置
+        n_sp = len(L_Statu_sp)    #种子节点的数量
+        for x in range(n_sp):        #每个种子节点扩散一次,
+            row = L_Statu_sp[x]
+            n_rel = len(L_M_relative[row])   #获取种子节点的度
+            Flag = 0        #标志位默认为0表示没有感染
+            arf_local =arf
+            list_status_degreed_proint = [0]*n_rel      #构建一个数组，存放与种子节点相邻的所有节点的状态，默认为0
+            for y1 in range(n_rel):  #遍历一遍所有邻居节点，将其状态更新至list_status_degreed_proint中
+                col = L_M_relative[row][y1]
+                list_status_degreed_proint[y1]=L_Statu[col]   
+            
+            for y in range(n_rel):
+                col = L_M_relative[row][y]   #遍历与种子节点相连接的节点
+                if L_Statu[col] == init_data.IGO:   #如果与种子节点相邻的第col个节点，还没有被感染
+                    if  uniformity_probability_simulation(L_namida[col]) == 1 :  #经管概率计算后，如果该点应该被感染
+                        L_Statu[col] = init_data.SPREAD     #设置该节点的状态为感染
+                        L_tmp.append(col)       #则已感染的列表中添加新被感染的节点
+                        #used for video change  (statu , x, y , iter level) 
+                        #statu 0 . I -> S. statu 1 S->Sti  statu 2 : no change(S-I) statu 3 : no change(S-s) statu 4 : no change(S-sti) statu 5  : progress
+                        L_video.append([5,row,col,iter_time])  #几个参数的意思：状态（传播中）、row种子节点、col与种子节点连接的节点、迭代次数
+                        L_video.append([0,row,col,iter_time]) #几个参数的意思：状态（未感染-》感染）、row种子节点、col与种子节点连接的节点、迭代次数
+                    else :                       #经管概率计算后，如果该点不应该被感染
+                        L_video.append([5,row,col,iter_time])
+                        L_video.append([2,row,col,iter_time])#几个参数的意思：状态（没有改变）、row种子节点、col与种子节点连接的节点、迭代次数
+                elif L_Statu[col] == init_data.SPREAD :   #如果当前节点已经被感染
+                    #if uniformity_probability_simulation(arf_local) == 1 :  #如果节点要被感染
+                    if(check_list(list_status_degreed_proint))==1: #且当年种子的相邻节点没有未感染的节点
+                        #if(check_list(list_status_degreed_proint))==1: #且当年种子的相邻节点没有未感染的节点
+                        L_Statu[row] = init_data.STIFFER      #当前种子的值设为stiffer，
+                        Flag =1  
+                        break                       
+                    else :                                           #如果概率计算的结果是，节点不被感染
+                        L_video.append([5,row,col,iter_time])
+                        L_video.append([3,row,col,iter_time])
+                    
+                        #break
+                    #else:
+                        #arf_local +=init_data.g_arf_step
+                                     
+                elif L_Statu[col] == init_data.STIFFER:        #如果当前节点已经为stiffer？                       
+                    #if uniformity_probability_simulation(arf_local) == 1 : #经管概率计算后，如果该点应该被感染
+                    if(check_list(list_status_degreed_proint))==1: #且当年种子的相邻节点没有未感染的节点
+                        #if(check_list(list_status_degreed_proint))==1: #且当年种子的相邻节点没有未感染的节点
+                        L_Statu[row] = init_data.STIFFER      #当前种子的值设为stiffer，
+                        Flag =1 
+                        break
+                            #L_Statu[row] = init_data.STIFFER
+                            #Flag =1
+                    else :                                    #经管概率计算后，如果该点不应该被感染
+                        L_video.append([5,row,col,iter_time])
+                        L_video.append([4,row,col,iter_time])
+                    
+                        #break;
+                    #else:   
+                        #arf_local +=init_data.g_arf_step
+                #if arf_local >=1:
+                    #arf_local = 1
+                
+            if Flag == 1 :             #如果种子节点已经为stiffer状态，则不再扩散
+                L_tmp.remove(row)       #种子节点列表中删除stiffer状态的节点
+                L_video.append([5,row,-1,iter_time])
+                L_video.append([1,row,-1,iter_time])
+        L_Statu_sp = copy.deepcopy(L_tmp)
+        L_namida = namida_update(L_M_relative,L_Statu,deta)   #再次计算感染概率？？
+        if len(L_Statu) < g_print_max_people:
+            #print "L_Statu_sp 种子节点位置:"
+            #print L_Statu_sp
+            #print "L_Statu 各节点状态:"
+            #print L_Statu
+            test_1_1=1
+        if len(L_Statu_sp) == 0:   #如果种子节点已经没有了
+            L_R.append(iter_time)      #将迭代次数存入
+            break
+        counts_stiff=0.0              #存储sitffer节点的个数
+        num_state = len(L_Statu)
+        for x in range(num_state):
+            if L_Statu[x] == init_data.STIFFER:
+                counts_stiff +=1           #计算sitffer节点的个数
+        l_speed.append((counts_stiff/num_state)-speed_stiff)
+        speed_stiff = counts_stiff/num_state         #？？？播速度=总僵尸节点/节点总数
+        """
+        unpread=0.0  #单次计算未被感染的节点
+        total_l_1time = len(L_Statu)  #所有节点数量
+        for x in range(total_l_1time):
+            if L_Statu[x] == init_data.IGO: #IGO的值为0
+                unpread +=1
+        g_spread_rate.append(((total_l_1time-unpread)*1.0)/(total_l_1time*1.0))  #计算单次感染率
+        """
+    counts= 0       #计算最终未被感染的节点
+    total_l = len(L_Statu)  #所有节点数量
+    for x in range(total_l):
+        if L_Statu[x] == init_data.IGO:
+            counts +=1
+    L_R.append(((total_l-counts)*1.0)/(total_l*1.0))   #最终感染率=（总节点-最终未感染节点）/总节点
+    L_R.append(l_speed)
+    L_R.append(L_video)
+    l_speed = []
+    #print "l_video  传播过程的次数"
+    #print len(L_video)
+    init_data.len_L_Video=len(L_video)
+    return L_R
+
+
+def statu_update1(L_Statu ,L_namida,L_M_relative,L_Statu_sp,iter_time1,arf,deta ):#deta = 0.1 老的函数
+    #参数1，所有节点中，种子节点的情况。参数2，所有节点被感染的概率，参数3，节点间的关系情况。参数4，种子节点的位置。参数6，迭代次数。。。后面两个参数还没看懂。。
+    
+    #calulate status_change[i] for each people
+    #L_M_relative : all people's relative with other people  节点间的关系情况
+    #L_namida : all people's namida   所有节点被感染的概率
+    #L_Statu : all people ' statu    所有节点的状态
+    #L_Statu_sp:  list statu = SPREAD people in status    种子节点的位置
+    
+    L_R = []           #存储迭代次数、还存储最终感染率，传播速度、传播过程
+    speed_stiff = 0.0   #？？？？
+    l_speed =[]   #没弄明白这个的含义
+    L_video = []  #传播过程状态存储
+    
+    for iter_time in range(iter_time1):  #迭代循环        
+        L_tmp = copy.deepcopy(L_Statu_sp)  #种子节点列表，获取种子节点的位置
+        n_sp = len(L_Statu_sp)    #种子节点的数量
+        for x in range(n_sp):        #每个种子节点扩散一次,dui
+            row = L_Statu_sp[x]
+            n_rel = len(L_M_relative[row])   #获取种子节点的度
+            Flag = 0        #标志位默认为0表示没有感染
+            arf_local =arf
+            for y in range(n_rel):
+                col = L_M_relative[row][y]   #遍历与种子节点相连接的节点
+                if L_Statu[col] == init_data.IGO:   #如果与种子节点相邻的第col个节点，还没有被感染
+                    if  uniformity_probability_simulation(L_namida[col]) == 1 :  #经管概率计算后，如果该点应该被感染
+                        L_Statu[col] = init_data.SPREAD     #设置该节点的状态为感染
+                        L_tmp.append(col)       #则已感染的列表中添加新被感染的节点
+                        #used for video change  (statu , x, y , iter level) 
+                        #statu 0 . I -> S. statu 1 S->Sti  statu 2 : no change(S-I) statu 3 : no change(S-s) statu 4 : no change(S-sti) statu 5  : progress
+                        L_video.append([5,row,col,iter_time])  #几个参数的意思：状态（传播中）、row种子节点、col与种子节点连接的节点、迭代次数
+                        L_video.append([0,row,col,iter_time]) #几个参数的意思：状态（未感染-》感染）、row种子节点、col与种子节点连接的节点、迭代次数
+                    else :                       #经管概率计算后，如果该点不应该被感染
+                        L_video.append([5,row,col,iter_time])
+                        L_video.append([2,row,col,iter_time])#几个参数的意思：状态（没有改变）、row种子节点、col与种子节点连接的节点、迭代次数
+                elif L_Statu[col] == init_data.SPREAD :   #如果当前节点已经被感染
+                    if uniformity_probability_simulation(arf_local) == 1 :  #如果节点要被感染
+                        L_Statu[row] = init_data.STIFFER      #当前种子的值设为stiffer，
+                        Flag =1                         
+                    else :                                           #如果概率计算的结果是，节点不被感染
+                        L_video.append([5,row,col,iter_time])
+                        L_video.append([3,row,col,iter_time])
+                    
+                        #break
+                    #else:
+                        #arf_local +=init_data.g_arf_step
+                                     
+                else:        #如果当前节点已经为stiffer？                       
+                    if uniformity_probability_simulation(arf_local) == 1 : #经管概率计算后，如果该点应该被感染
+                        L_Statu[row] = init_data.STIFFER
+                        Flag =1
+                    else :                                    #经管概率计算后，如果该点不应该被感染
+                        L_video.append([5,row,col,iter_time])
+                        L_video.append([4,row,col,iter_time])
+                    
+                        #break;
+                    #else:   
+                        #arf_local +=init_data.g_arf_step
+                #if arf_local >=1:
+                    #arf_local = 1
+                
+            if Flag == 1 :             #如果种子节点已经为stiffer状态，则不再扩散
+                L_tmp.remove(row)       #种子节点列表中删除stiffer状态的节点
+                L_video.append([5,row,-1,iter_time])
+                L_video.append([1,row,-1,iter_time])
+        L_Statu_sp = copy.deepcopy(L_tmp)
+        L_namida = namida_update(L_M_relative,L_Statu,deta)   #再次计算感染概率？？
+        if len(L_Statu) < g_print_max_people:
+            #print "L_Statu_sp 种子节点位置:"
+            #print L_Statu_sp
+            #print "L_Statu 各节点状态:"
+            #print L_Statu
+            test_1_1=1
+        if len(L_Statu_sp) == 0:   #如果种子节点已经没有了
+            L_R.append(iter_time)      #将迭代次数存入
+            break
+        counts_stiff=0.0              #存储sitffer节点的个数
+        num_state = len(L_Statu)
+        for x in range(num_state):
+            if L_Statu[x] == init_data.STIFFER:
+                counts_stiff +=1           #计算sitffer节点的个数
+        l_speed.append((counts_stiff/num_state)-speed_stiff)
+        speed_stiff = counts_stiff/num_state         #？？？播速度=总僵尸节点/节点总数
+
+    counts= 0       #计算最终未被感染的节点
+    total_l = len(L_Statu)  #所有节点数量
+    for x in range(total_l):
+        if L_Statu[x] == init_data.IGO:
+            counts +=1
+    L_R.append(((total_l-counts)*1.0)/(total_l*1.0))   #最终感染率=（总节点-最终未感染节点）/总节点
+    L_R.append(l_speed)
+    L_R.append(L_video)
+    l_speed = []
+    #print "l_video  传播过程的次数"
+    #print len(L_video)
+    init_data.len_L_Video=len(L_video)
+    return L_R
+
+
+if __name__ == "__main__" :
+    #list1=[1,2,1,0]
+    #print check_list(list1)
+    """
+    times = 20
+    for x in range(times):
+        print  uniformity_probability_simulation(0.5)
+    print "0.555555555555555555555"
+    for x in range(times):
+        print  uniformity_probability_simulation(0.1)
+    print "0.111111111111111111111"
+    for x in range(times):
+        print  uniformity_probability_simulation(0.3)
+    print "0.33333333333333333333333"
+    for x in range(times):
+        print  uniformity_probability_simulation(0.7)  
+    print "0.7777777777777777777"
+    for x in range(times):
+        print  uniformity_probability_simulation(0.9)  
+    print "0.9999999999999999999999"    
+    """    

@@ -1,0 +1,13 @@
+#!/c:/Python27
+#Filename:helloworld.py
+
+print 'hello,world!'
+
+a=1+2j
+b=3+4j
+c=a+b
+print c
+
+char='hahaha\
+jjj'
+print char
