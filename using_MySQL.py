@@ -3,7 +3,7 @@
 # @Filename: using_MySQL.py
 import mysql.connector
 # 连接数据库，use_unicode=True使MySQL的DB-API始终返回unicode
-conn = mysql.connector.connect(user='root', password='xxzx62100', database='arc', use_unicode=True)
+conn = mysql.connector.connect(user='root', password='xxxxxx', database='arc', use_unicode=True)
 # 建立游标来使用SQL操作
 cursor = conn.cursor()
 # SQL操作数据库
