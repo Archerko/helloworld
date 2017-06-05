@@ -27,6 +27,8 @@ class CuoWuJieXian(object):
         self.y3 = 0     # 第二元件求向量夹角的向量1(U32)的y
         self.y4 = 0     # 第二元件求向量夹角的向量2(I2)的y
 
+        self.k = 0      # 实例的k
+
     def umax(self, u, uno):
         if u == 'Uab':
             uabxmax = -(1.0 * math.cos(np.pi/6.0))
@@ -182,6 +184,30 @@ class CuoWuJieXian(object):
         anglep2_nophi = anglep2 - 15
         return anglep1_nophi, anglep2_nophi
 
+    def cosphi(self, anglep1_nophi, anglep2_nophi):
+        pi_angle1 = math.radians(anglep1_nophi)
+        pi_angle2 = math.radians(anglep2_nophi)
+        real_cospi12 = math.cos(pi_angle1) + math.cos(pi_angle2)    # P1+P2和差角展开前半部分cos
+        real_sinpi12 = math.sin(pi_angle1) + math.sin(pi_angle2)    # 后半部分sin
+        cospi12 = round(real_cospi12, 2)     # P1+P2和差角展开前半部分cos，保留2位小数
+        sinpi12 = round(real_sinpi12, 2)     # 后半部分sin保留2位小叔
+        if cospi12 == 0 and sinpi12 != 0:
+            # p12 = str(sinpi12) + u'sinφ'
+            self.k = str(round((math.sqrt(3)/real_sinpi12), 2)) + u'ctanφ'
+        elif sinpi12 == 0 and cospi12 != 0:
+            # p12 = str(cospi12) + u'cosφ'
+            self.k = str(round((math.sqrt(3)/real_cospi12), 2))
+        elif cospi12 == 0 and sinpi12 == 0:
+            self.k = '???'
+        else:
+            if sinpi12 < 0:
+                zfh = '+'
+            else:
+                zfh = '-'
+            p12 = '(' + str(cospi12) + u'cosφ' + zfh + str(sinpi12).replace('-', '') + u'sinφ' + ')'
+            self.k = u'√3cosφ/' + p12
+        return self.k
+
     def pltpic(self):
         plt.plot([0, 0], [-1.9, 1.9], ':', color='#666666')
         plt.plot([-1.9, 1.9], [0, 0], ':', color='#666666')
@@ -207,8 +233,11 @@ class CuoWuJieXian(object):
         self.umax(self.u2, '(U32)')
         self.imax(self.i1, '(I1)')
         self.imax(self.i2, '(I2)')
-        plt.text(0.45, 1.80, 'P1: U12*I1*cos(' + str(int(self.angle()[0])) + u'°+φ)')
-        plt.text(0.45, 1.66, 'P2: U32*I2*cos(' + str(int(self.angle()[1])) + u'°+φ)')
+        plt.text(0.35, 1.90, 'P1: ' + self.u1 + '*' + self.i1.replace('-', '') +
+                 '*cos(' + str(int(self.angle()[0])) + u'°+φ)')
+        plt.text(0.35, 1.76, 'P2: ' + self.u2 + '*' + self.i2.replace('-', '') +
+                 '*cos(' + str(int(self.angle()[1])) + u'°+φ)')
+        plt.text(0.35, 1.62, 'k = ' + self.cosphi(self.angle()[0], self.angle()[1]))
         plt.show()
 
 if __name__ == '__main__':
@@ -216,7 +245,9 @@ if __name__ == '__main__':
     #ii1 = raw_input('请再输入电流I1的值：（例如Ia，-Ic等，注意大小写）')
     #ii2 = raw_input('请再输入电流I1的值：（例如Ia，-Ic等，注意大小写）')
     #cw1 = CuoWuJieXian(uuabc, ii1, ii2)
-    fig = plt.figure(figsize=(8.0, 8.0))
-    cw1 = CuoWuJieXian('cab', 'Ia', '-Ic')
+    fig = plt.figure(figsize=(7, 7))
+    cw1 = CuoWuJieXian('cba', '-Ia', 'Ic')
     cw1.pltpic()
+
+
 
