@@ -4,6 +4,8 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import math
+import Tkinter
+import tkFont
 
 
 class CuoWuJieXian(object):
@@ -189,19 +191,19 @@ class CuoWuJieXian(object):
         pi_angle2 = math.radians(anglep2_nophi)
         real_cospi12 = math.cos(pi_angle1) + math.cos(pi_angle2)    # P1+P2和差角展开前半部分cos
         real_sinpi12 = math.sin(pi_angle1) + math.sin(pi_angle2)    # 后半部分sin
-        cospi12 = round(real_cospi12, 2)     # P1+P2和差角展开前半部分cos，保留2位小数
-        sinpi12 = round(real_sinpi12, 2)     # 后半部分sin保留2位小叔
+        cospi12 = round(real_cospi12, 3)     # P1+P2和差角展开前半部分cos，保留2位小数
+        sinpi12 = round(real_sinpi12, 3)     # 后半部分sin保留2位小叔
         if cospi12 == 0 and sinpi12 != 0:
             # p12 = str(sinpi12) + u'sinφ'
-            self.k = str(round((math.sqrt(3)/real_sinpi12), 2)) + u'ctanφ'
+            self.k = str(round((math.sqrt(3)/real_sinpi12), 3)) + u'ctanφ'
         elif sinpi12 == 0 and cospi12 != 0:
             # p12 = str(cospi12) + u'cosφ'
-            self.k = str(round((math.sqrt(3)/real_cospi12), 2))
+            self.k = str(round((math.sqrt(3)/real_cospi12), 3))
         elif cospi12 == 0 and sinpi12 == 0:
-            self.k = '???'
+            self.k = '∞'
         else:
             if sinpi12 < 0:
-                zfh = '+'
+                zfh = '+'   # cos(a+b)展开的中间有负号，做个判断
             else:
                 zfh = '-'
             p12 = '(' + str(cospi12) + u'cosφ' + zfh + str(sinpi12).replace('-', '') + u'sinφ' + ')'
@@ -233,21 +235,140 @@ class CuoWuJieXian(object):
         self.umax(self.u2, '(U32)')
         self.imax(self.i1, '(I1)')
         self.imax(self.i2, '(I2)')
-        plt.text(0.35, 1.90, 'P1: ' + self.u1 + '*' + self.i1.replace('-', '') +
+        plt.text(0.30, 1.90, 'P1: ' + self.u1 + '*' + self.i1.replace('-', '') +
                  '*cos(' + str(int(self.angle()[0])) + u'°+φ)')
-        plt.text(0.35, 1.76, 'P2: ' + self.u2 + '*' + self.i2.replace('-', '') +
+        plt.text(0.30, 1.76, 'P2: ' + self.u2 + '*' + self.i2.replace('-', '') +
                  '*cos(' + str(int(self.angle()[1])) + u'°+φ)')
-        plt.text(0.35, 1.62, 'k = ' + self.cosphi(self.angle()[0], self.angle()[1]))
+        plt.text(0.30, 1.62, 'k = ' + self.cosphi(self.angle()[0], self.angle()[1]))
         plt.show()
 
-if __name__ == '__main__':
+
+class CWJXGUI(Tkinter.Frame):
+    uabclist = ['abc', 'bca', 'cab', 'acb', 'bac', 'cba']
+    ilist = ['Ia', 'Ic', '-Ia', '-Ic']
+
+    def __init__(self, master=None):
+        Tkinter.Frame.__init__(self, master)
+        self.pack()
+        tf20 = tkFont.Font(size=20, family='黑体')
+        tf_an = tkFont.Font(size=25, family='黑体')
+        self.app_name = Tkinter.Label(self, text='电能计量错误接线判断（基础版ver 0.48）', font=tf_an)
+        self.uabc_name = Tkinter.Label(self, text='U', font=tf20)
+        self.ii1_name = Tkinter.Label(self, text='I1', font=tf20)
+        self.ii2_name = Tkinter.Label(self, text='I2', font=tf20)
+        self.xuanding = Tkinter.Label(self, text='选定：', font=tf20, fg='red')
+        self.uabc_xd = Tkinter.Label(self, text='U', font=tf20)
+        self.ii1_xd = Tkinter.Label(self, text='I1', font=tf20)
+        self.ii2_xd = Tkinter.Label(self, text='I2', font=tf20)
+        self.uabc_listbox = Tkinter.Listbox(self, height=8, width=6, font=tf20)
+        self.ii1_listbox = Tkinter.Listbox(self, height=8, width=6, font=tf20)
+        self.ii2_listbox = Tkinter.Listbox(self, height=8, width=6, font=tf20)
+        self.uabc_button = Tkinter.Button(self, text='↓↓↓', command=self.uabc_func)
+        self.uabcvar = Tkinter.StringVar()
+        self.uabc_chose = Tkinter.Entry(self, textvariable=self.uabcvar, width=6, font=tf20)
+        self.ii1_button = Tkinter.Button(self, text='↓↓↓', command=self.ii1_func)
+        self.ii1var = Tkinter.StringVar()
+        self.ii1_chose = Tkinter.Entry(self, textvariable=self.ii1var, width=6, font=tf20)
+        self.ii2_button = Tkinter.Button(self, text='↓↓↓', command=self.ii2_func)
+        self.ii2var = Tkinter.StringVar()
+        self.ii2_chose = Tkinter.Entry(self, textvariable=self.ii2var, width=6, font=tf20)
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.app_name.grid(column=1, row=0, columnspan=8)   # APP标题
+
+        self.xuanding.grid(column=0, row=4, padx=10, pady=10)  # ‘选定’
+
+        self.uabc_name.grid(column=2, row=1, padx=10, pady=10)
+        self.ii1_name.grid(column=4, row=1, padx=10, pady=10)
+        self.ii2_name.grid(column=6, row=1, padx=10, pady=10)
+
+        for i in CWJXGUI.uabclist:
+            self.uabc_listbox.insert(Tkinter.END, i)
+        self.uabc_listbox.bind('<Double-Button-1>', self.uabc_func1)
+        self.uabc_listbox.select_set(0)
+        self.uabc_listbox.grid(column=2, row=2, padx=10, pady=10)
+
+        for i in CWJXGUI.ilist:
+            self.ii1_listbox.insert(Tkinter.END, i)
+        self.ii1_listbox.bind('<Double-Button-1>', self.ii1_func1)
+        self.ii1_listbox.grid(column=4, row=2)
+
+        for i in CWJXGUI.ilist:
+            self.ii2_listbox.insert(Tkinter.END, i)
+        self.ii2_listbox.bind('<Double-Button-1>', self.ii2_func1)
+        self.ii2_listbox.grid(column=6, row=2)
+
+        self.uabc_button.grid(column=2, row=3)
+        self.ii1_button.grid(column=4, row=3)
+        self.ii2_button.grid(column=6, row=3)
+
+        self.uabcvar.set('abc')
+        self.uabc_chose.grid(column=2, row=4)
+
+        self.ii1var.set('Ia')
+        self.ii1_chose.grid(column=4, row=4)
+
+        self.ii2var.set('Ic')
+        self.ii2_chose.grid(column=6, row=4)
+
+        self.uabc_xd.grid(column=1, row=4)
+        self.ii1_xd.grid(column=3, row=4)
+        self.ii2_xd.grid(column=5, row=4)
+
+    def uabc_func1(self, event):
+        if self.uabc_listbox.curselection() == ():
+            self.uabcvar.set('abc')
+        else:
+            self.uabcvar.set(self.uabc_listbox.get(self.uabc_listbox.curselection()))
+
+    def uabc_func(self):
+        if self.uabc_listbox.curselection() == ():
+            self.uabcvar.set('abc')
+        else:
+            self.uabcvar.set(self.uabc_listbox.get(self.uabc_listbox.curselection()))
+
+    def ii1_func1(self, event):
+        if self.ii1_listbox.curselection() == ():
+            self.ii1var.set('Ia')
+        else:
+            self.ii1var.set(self.ii1_listbox.get(self.ii1_listbox.curselection()))
+
+    def ii1_func(self):
+        if self.ii1_listbox.curselection() == ():
+            self.ii1var.set('Ia')
+        else:
+            self.ii1var.set(self.ii1_listbox.get(self.ii1_listbox.curselection()))
+
+    def ii2_func1(self, event):
+        if self.ii2_listbox.curselection() == ():
+            self.ii2var.set('Ic')
+        else:
+            self.ii2var.set(self.ii2_listbox.get(self.ii2_listbox.curselection()))
+
+    def ii2_func(self):
+        if self.ii2_listbox.curselection() == ():
+            self.ii2var.set('Ic')
+        else:
+            self.ii2var.set(self.ii2_listbox.get(self.ii2_listbox.curselection()))
+
+    def sent(self):
+        plt.figure(figsize=(7, 7))
+        cw1 = CuoWuJieXian(self.uuabc, self.ii1, self.ii2)
+        cw1.pltpic()
+
+cwgui1 = CWJXGUI()
+cwgui1.master.title('Hehe')
+cwgui1.mainloop()
+
+#if __name__ == '__main__':
     #uuabc = raw_input('请输入电压顺序：（例如 abc, bac, cab等）')
     #ii1 = raw_input('请再输入电流I1的值：（例如Ia，-Ic等，注意大小写）')
     #ii2 = raw_input('请再输入电流I1的值：（例如Ia，-Ic等，注意大小写）')
     #cw1 = CuoWuJieXian(uuabc, ii1, ii2)
-    fig = plt.figure(figsize=(7, 7))
-    cw1 = CuoWuJieXian('cba', '-Ia', 'Ic')
-    cw1.pltpic()
+    #fig = plt.figure(figsize=(7, 7))
+    #cw1 = CuoWuJieXian('cab', '-Ia', 'Ic')
+    #cw1.pltpic()
 
 
 
