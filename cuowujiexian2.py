@@ -200,7 +200,7 @@ class CuoWuJieXian(object):
             # p12 = str(cospi12) + u'cosφ'
             self.k = str(round((math.sqrt(3)/real_cospi12), 3))
         elif cospi12 == 0 and sinpi12 == 0:
-            self.k = '∞'
+            self.k = u'∞'
         else:
             if sinpi12 < 0:
                 zfh = '+'   # cos(a+b)展开的中间有负号，做个判断
@@ -239,7 +239,7 @@ class CuoWuJieXian(object):
                  '*cos(' + str(int(self.angle()[0])) + u'°+φ)')
         plt.text(0.30, 1.76, 'P2: ' + self.u2 + '*' + self.i2.replace('-', '') +
                  '*cos(' + str(int(self.angle()[1])) + u'°+φ)')
-        plt.text(0.30, 1.62, 'k = ' + self.cosphi(self.angle()[0], self.angle()[1]))
+        plt.text(0.30, 1.62, u'k = ' + self.cosphi(self.angle()[0], self.angle()[1]))
         plt.show()
 
 
@@ -260,9 +260,9 @@ class CWJXGUI(Tkinter.Frame):
         self.uabc_xd = Tkinter.Label(self, text='U', font=tf20)
         self.ii1_xd = Tkinter.Label(self, text='I1', font=tf20)
         self.ii2_xd = Tkinter.Label(self, text='I2', font=tf20)
-        self.uabc_listbox = Tkinter.Listbox(self, height=8, width=6, font=tf20)
-        self.ii1_listbox = Tkinter.Listbox(self, height=8, width=6, font=tf20)
-        self.ii2_listbox = Tkinter.Listbox(self, height=8, width=6, font=tf20)
+        self.uabc_listbox = Tkinter.Listbox(self, height=7, width=6, font=tf20)
+        self.ii1_listbox = Tkinter.Listbox(self, height=7, width=6, font=tf20)
+        self.ii2_listbox = Tkinter.Listbox(self, height=7, width=6, font=tf20)
         self.uabc_button = Tkinter.Button(self, text='↓↓↓', command=self.uabc_func)
         self.uabcvar = Tkinter.StringVar()
         self.uabc_chose = Tkinter.Entry(self, textvariable=self.uabcvar, width=6, font=tf20)
@@ -272,6 +272,21 @@ class CWJXGUI(Tkinter.Frame):
         self.ii2_button = Tkinter.Button(self, text='↓↓↓', command=self.ii2_func)
         self.ii2var = Tkinter.StringVar()
         self.ii2_chose = Tkinter.Entry(self, textvariable=self.ii2var, width=6, font=tf20)
+        self.refresh_button = Tkinter.Button(self, text='生成\n图形', font=tf20, command=self.refresh_func)
+        self.p1_name = Tkinter.Label(self, text='第一元件：', font=tf20)
+        self.p1_name_u = Tkinter.Label(self, text='U12', font=tf20)
+        self.p1_u_var = Tkinter.StringVar()
+        self.p1_u = Tkinter.Entry(self, textvariable=self.p1_u_var, width=6, font=tf20)
+        self.p1_name_i1 = Tkinter.Label(self, text='I1', font=tf20)
+        self.p1_i1_var = Tkinter.StringVar()
+        self.p1_i1 = Tkinter.Entry(self, textvariable=self.p1_i1_var, width=6, font=tf20)
+        self.p1_name_i2 = Tkinter.Label(self, text='I2', font=tf20)
+        self.p1_i2_var = Tkinter.StringVar()
+        self.p1_i2 = Tkinter.Entry(self, textvariable=self.p1_i2_var, width=6, font=tf20)
+        self.p1_name_p = Tkinter.Label(self, text='P1', font=tf20)
+        self.p1_p_var = Tkinter.StringVar()
+        self.p1_p = Tkinter.Entry(self, textvariable=self.p1_p_var, font=tf20, width=24)
+        self.rightside = Tkinter.Label(self, width=3)
         self.create_widgets()
 
     def create_widgets(self):
@@ -287,34 +302,47 @@ class CWJXGUI(Tkinter.Frame):
             self.uabc_listbox.insert(Tkinter.END, i)
         self.uabc_listbox.bind('<Double-Button-1>', self.uabc_func1)
         self.uabc_listbox.select_set(0)
-        self.uabc_listbox.grid(column=2, row=2, padx=10, pady=10)
+        self.uabc_listbox.grid(column=2, row=2, rowspan=7, padx=10, pady=10)
 
         for i in CWJXGUI.ilist:
             self.ii1_listbox.insert(Tkinter.END, i)
         self.ii1_listbox.bind('<Double-Button-1>', self.ii1_func1)
-        self.ii1_listbox.grid(column=4, row=2)
+        self.ii1_listbox.grid(column=4, row=2, rowspan=7)
 
         for i in CWJXGUI.ilist:
             self.ii2_listbox.insert(Tkinter.END, i)
         self.ii2_listbox.bind('<Double-Button-1>', self.ii2_func1)
-        self.ii2_listbox.grid(column=6, row=2)
+        self.ii2_listbox.grid(column=6, row=2, rowspan=7)
 
-        self.uabc_button.grid(column=2, row=3)
-        self.ii1_button.grid(column=4, row=3)
-        self.ii2_button.grid(column=6, row=3)
+        self.uabc_button.grid(column=2, row=9, pady=10)
+        self.ii1_button.grid(column=4, row=9, pady=10)
+        self.ii2_button.grid(column=6, row=9, pady=10)
 
         self.uabcvar.set('abc')
-        self.uabc_chose.grid(column=2, row=4)
+        self.uabc_chose.grid(column=2, row=10)
 
         self.ii1var.set('Ia')
-        self.ii1_chose.grid(column=4, row=4)
+        self.ii1_chose.grid(column=4, row=10)
 
         self.ii2var.set('Ic')
-        self.ii2_chose.grid(column=6, row=4)
+        self.ii2_chose.grid(column=6, row=10)
 
-        self.uabc_xd.grid(column=1, row=4)
-        self.ii1_xd.grid(column=3, row=4)
-        self.ii2_xd.grid(column=5, row=4)
+        self.uabc_xd.grid(column=1, row=10)
+        self.ii1_xd.grid(column=3, row=10)
+        self.ii2_xd.grid(column=5, row=10)
+
+        self.refresh_button.grid(column=7, row=0, rowspan=12, padx=20)
+
+        self.p1_name.grid(column=8, row=1)
+        self.p1_name_u.grid(column=9, row=1)
+        self.p1_u.grid(column=10, row=1)
+        self.p1_name_i1.grid(column=11, row=1)
+        self.p1_i1.grid(column=12, row=1)
+        self.p1_name_i2.grid(column=13, row=1)
+        self.p1_i2.grid(column=14, row=1)
+        self.p1_name_p.grid(column=9, row=2)
+        self.p1_p.grid(column=10, columnspan=5, row=2)
+        self.rightside.grid(column=15, row=1)
 
     def uabc_func1(self, event):
         if self.uabc_listbox.curselection() == ():
@@ -352,10 +380,16 @@ class CWJXGUI(Tkinter.Frame):
         else:
             self.ii2var.set(self.ii2_listbox.get(self.ii2_listbox.curselection()))
 
-    def sent(self):
+    def refresh_func(self):
         plt.figure(figsize=(7, 7))
-        cw1 = CuoWuJieXian(self.uuabc, self.ii1, self.ii2)
+        cw1 = CuoWuJieXian(self.uabcvar.get(), self.ii1var.get(), self.ii2var.get())
+        self.p1_u_var.set(cw1.u1)
+        self.p1_i1_var.set(cw1.i1)
+        self.p1_i2_var.set(cw1.i2)
+        p1 = cw1.u1 + '*' + cw1.i1.replace('-', '') + '*cos(' + str(int(cw1.angle()[0])) + u'°+φ)'
+        self.p1_p_var.set(p1)
         cw1.pltpic()
+
 
 cwgui1 = CWJXGUI()
 cwgui1.master.title('Hehe')
