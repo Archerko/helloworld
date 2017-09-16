@@ -7,7 +7,7 @@ import math
 import Tkinter
 import tkFont
 import tkMessageBox
-
+import re
 
 class CuoWuJieXian(object):
     def __init__(self, uabc, i1, i2):
@@ -32,10 +32,10 @@ class CuoWuJieXian(object):
 
         self.k = 0      # 实例的k
 
-        self.umax(self.u1, '(U12)')     # 必须将这四个函数放到init里来，不然self.x1之类的参数初始化后为0，会引起错误
-        self.umax(self.u2, '(U32)')
-        self.imax(self.i1, '(I1)')
-        self.imax(self.i2, '(I2)')
+        self.umax_init(self.u1)     # 必须将这四个函数放到init里来，不然self.x1之类的参数初始化后为0，会引起错误
+        self.umax_init(self.u2)
+        self.imax_init(self.i1)
+        self.imax_init(self.i2)
 
     def umax_init(self, u):
         if u == 'Uab':
@@ -303,7 +303,10 @@ class CuoWuJieXian(object):
         sinpi12 = round(real_sinpi12, 3)     # 后半部分sin保留2位小叔
         if cospi12 == 0 and sinpi12 != 0:
             # p12 = str(sinpi12) + u'sinφ'
-            self.k = str(round((math.sqrt(3)/real_sinpi12), 3)) + u'cotφ'
+            if sinpi12 < 0:
+                self.k = str(round((math.sqrt(3)/real_sinpi12), 3)).replace('-', '') + u'cotφ'
+            else:
+                self.k = '-' + str(round((math.sqrt(3)/real_sinpi12), 3)).replace('-', '') + u'cotφ'
         elif sinpi12 == 0 and cospi12 != 0:
             # p12 = str(cospi12) + u'cosφ'
             self.k = str(round((math.sqrt(3)/real_cospi12), 3))
@@ -339,6 +342,11 @@ class CuoWuJieXian(object):
         plt.plot([0, x3], [0, y3])
         plt.text(-1.05, -0.58, 'Uc')
 
+        self.umax(self.u1, '(U12)')
+        self.umax(self.u2, '(U32)')
+        self.imax(self.i1, '(I1)')
+        self.imax(self.i2, '(I2)')
+
         plt.text(0.30, 1.90, 'P1: ' + self.u1 + '*' + self.i1.replace('-', '') +
                  '*cos(' + str(int(self.angle()[0])) + u'°+φ)')
         plt.text(0.30, 1.76, 'P2: ' + self.u2 + '*' + self.i2.replace('-', '') +
@@ -359,15 +367,21 @@ class CuoWuJieXian(object):
         pi_angle2 = math.radians(anglep2_nophi)
         real_cospi12 = math.cos(pi_angle1) + math.cos(pi_angle2)    # P1+P2和差角展开前半部分cos
         real_sinpi12 = math.sin(pi_angle1) + math.sin(pi_angle2)    # 后半部分sin
-        if real_cospi12 == 0 and real_sinpi12 != 0:
-            k = (math.sqrt(3)/real_sinpi12) * (_cosphi/_sinphi)
-        elif real_sinpi12 == 0 and real_cospi12 != 0:
+        if round(real_cospi12, 5) == 0 and round(real_sinpi12, 5) != 0:
+            k = -math.sqrt(3)/real_sinpi12 * (_cosphi/_sinphi)
+            k = round(k, 4)
+        elif round(real_sinpi12, 5) == 0 and round(real_cospi12, 5) != 0:
             k = math.sqrt(3)/real_cospi12
-        elif real_cospi12 == 0 and real_sinpi12 == 0:
+            k = round(k, 4)
+        elif round(real_cospi12, 5) == 0 and round(real_sinpi12, 5) == 0:
             k = u'∞'
         else:
             p12 = real_cospi12 * _cosphi - real_sinpi12 * _sinphi
-            k = (math.sqrt(3) * _cosphi) / p12
+            if round(p12, 3) == 0:
+                k = u'∞'
+            else:
+                k = (math.sqrt(3) * _cosphi) / p12
+                k = round(k, 4)
         return k
 
 
@@ -603,10 +617,9 @@ class CWJXGUI(Tkinter.Frame):
 
         cw1.pltpic()
 
+    pattern = re.compile('''(0\.0*[1-9]+)|(([1-8][0-9]|[1-9])(\.[0-9]+){0,1})''')
+
     def k_func(self):
-        _phi = 1
-        _sinphi = 1
-        _cosphi = 1
         phi = self.phi_var.get()
         sinphi = self.sinphi_var.get()
         cosphi = self.cosphi_var.get()
@@ -633,11 +646,13 @@ class CWJXGUI(Tkinter.Frame):
         else:
             tkMessageBox.showinfo('输入有误', u'φ的信息输入有误，请仔细核对！')
         cw1 = CuoWuJieXian(self.uabcvar.get(), self.ii1var.get(), self.ii2var.get())
+        # 看几个参数是否已定义
         if '_phi' in locals().keys() and '_sinphi' in locals().keys() and '_cosphi' in locals().keys():
             real_k = cw1.real_k(cw1.angle()[0], cw1.angle()[1], _phi, _sinphi, _cosphi)
             self.k_result_var.set(real_k)
+        # 没有定义则肯定为上面报错的信息，直接pass或者将k值历史值清除
         else:
-            print 'xxx'
+            self.k_result_var.set('')
 
 
 if __name__ == '__main__':
