@@ -11,14 +11,8 @@ def dlfile(url, count):
     urllib.urlretrieve(url, localpath)
 
 
-def dlmp4(url, count):
-    localpath = "image/%d" % (count) + ".mp4"
-    urllib.urlretrieve(url, localpath)
-
-
 def getData(tokenId):
     urls = []
-    mp4urls = []
     currentPageIndex = 1
     limit = 20
     while 1:
@@ -45,21 +39,15 @@ def getData(tokenId):
         currentPageIndex = currentPageIndex + 1
         for x in xrange(0, len(photos)):
             photo = photos[x]
-            if photo["mimeType"] == "mp4":
-                mp4thumbnail = photo["thumbnail"]
-                mp4x1024 = mp4thumbnail["x1024"]
-                mp4url = mp4x1024["url"]
-                if not mp4url:
-                    continue
-                mp4urls.append("http://www.disneyphotopass.com.cn:4000/" + mp4url)
-            elif photo["enImage"]:
+            if photo["enImage"]:
                 thumbnail = photo["thumbnail"]
                 en1024 = thumbnail["en1024"]
                 url = en1024["url"]
                 if not url:
                     continue
                 urls.append("http://www.disneyphotopass.com.cn:4000/" + url)
-    return urls, mp4urls
+
+    return urls
 
 
 def main(argv):
@@ -83,23 +71,17 @@ def main(argv):
 
     print "tokenId: %s" % (tokenId)
     # Get urls
-    urls, mp4urls = getData(tokenId)
+    urls = getData(tokenId)
     if not urls:
         return
     if len(urls) == 0:
         return
-    print urls
-    print len(urls)
-    print mp4urls
 
     # Download
-    print "need download %d photos and %d mp4" % (len(urls), len(mp4urls))
+    print "need download %d photos" % (len(urls))
     for x in xrange(0, len(urls)):
-        print "downloading photos... %d" % (x + 1)
+        print "downloading... %d" % (x + 1)
         dlfile(urls[x], x + 1)
-    for x in xrange(0, len(mp4urls)):
-        print "downloading mp4... %d" % (x+1)
-        dlmp4(mp4urls[x], x + 1)
 
     print 'download done.'
 

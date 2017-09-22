@@ -9,6 +9,7 @@ import tkFont
 import tkMessageBox
 import re
 
+
 class CuoWuJieXian(object):
     def __init__(self, uabc, i1, i2):
         self.uabc = uabc
@@ -20,27 +21,27 @@ class CuoWuJieXian(object):
         self.yj1 = (self.u1, self.i1)
         self.yj2 = (self.u2, self.i2)
 
-        self.x1 = 0     # 第一元件求向量夹角的向量1(U12)的x
-        self.x2 = 0     # 第一元件求向量夹角的向量2(I1)的x
-        self.y1 = 0     # 第一元件求向量夹角的向量1(U12)的y
-        self.y2 = 0     # 第一元件求向量夹角的向量2(I1)y
+        self.x1 = 0  # 第一元件求向量夹角的向量1(U12)的x
+        self.x2 = 0  # 第一元件求向量夹角的向量2(I1)的x
+        self.y1 = 0  # 第一元件求向量夹角的向量1(U12)的y
+        self.y2 = 0  # 第一元件求向量夹角的向量2(I1)y
 
-        self.x3 = 0     # 第二元件求向量夹角的向量1(U32)的x
-        self.x4 = 0     # 第二元件求向量夹角的向量2(I2)的x
-        self.y3 = 0     # 第二元件求向量夹角的向量1(U32)的y
-        self.y4 = 0     # 第二元件求向量夹角的向量2(I2)的y
+        self.x3 = 0  # 第二元件求向量夹角的向量1(U32)的x
+        self.x4 = 0  # 第二元件求向量夹角的向量2(I2)的x
+        self.y3 = 0  # 第二元件求向量夹角的向量1(U32)的y
+        self.y4 = 0  # 第二元件求向量夹角的向量2(I2)的y
 
-        self.k = 0      # 实例的k
+        self.k = 0  # 实例的k
 
-        self.umax_init(self.u1)     # 必须将这四个函数放到init里来，不然self.x1之类的参数初始化后为0，会引起错误
+        self.umax_init(self.u1)  # 必须将这四个函数放到init里来，不然self.x1之类的参数初始化后为0，会引起错误
         self.umax_init(self.u2)
         self.imax_init(self.i1)
         self.imax_init(self.i2)
 
     def umax_init(self, u):
         if u == 'Uab':
-            uabxmax = -(1.0 * math.cos(np.pi/6.0))
-            uabymax = 1.0 + math.sin(np.pi/6.0)
+            uabxmax = -(1.0 * math.cos(np.pi / 6.0))
+            uabymax = 1.0 + math.sin(np.pi / 6.0)
             if u == self.u1:
                 self.x1 = uabxmax
                 self.y1 = uabymax
@@ -48,7 +49,7 @@ class CuoWuJieXian(object):
                 self.x3 = uabxmax
                 self.y3 = uabymax
         elif u == 'Ucb':
-            ucbxmax = - 2 * math.cos(np.pi/6.0) * 1.0
+            ucbxmax = - 2 * math.cos(np.pi / 6.0) * 1.0
             if u == self.u1:
                 self.x1 = ucbxmax
                 self.y1 = 0
@@ -56,7 +57,7 @@ class CuoWuJieXian(object):
                 self.x3 = ucbxmax
                 self.y3 = 0
         elif u == 'Ubc':
-            ubcxmax = 2 * math.cos(np.pi/6.0) * 1.0
+            ubcxmax = 2 * math.cos(np.pi / 6.0) * 1.0
             if u == self.u1:
                 self.x1 = ubcxmax
                 self.y1 = 0
@@ -64,8 +65,8 @@ class CuoWuJieXian(object):
                 self.x3 = ubcxmax
                 self.y3 = 0
         elif u == 'Uac':
-            uacxmax = 1.0 * math.cos(np.pi/6.0)
-            uacymax = 1.0 + math.sin(np.pi/6.0)
+            uacxmax = 1.0 * math.cos(np.pi / 6.0)
+            uacymax = 1.0 + math.sin(np.pi / 6.0)
             if u == self.u1:
                 self.x1 = uacxmax
                 self.y1 = uacymax
@@ -73,8 +74,8 @@ class CuoWuJieXian(object):
                 self.x3 = uacxmax
                 self.y3 = uacymax
         elif u == 'Uca':
-            ucaxmax = -(1.0 * math.cos(np.pi/6.0))
-            ucaymax = -(1.0 + math.sin(np.pi/6.0))
+            ucaxmax = -(1.0 * math.cos(np.pi / 6.0))
+            ucaymax = -(1.0 + math.sin(np.pi / 6.0))
             if u == self.u1:
                 self.x1 = ucaxmax
                 self.y1 = ucaymax
@@ -82,8 +83,8 @@ class CuoWuJieXian(object):
                 self.x3 = ucaxmax
                 self.y3 = ucaymax
         elif u == 'Uba':
-            ubaxmax = 1.0 * math.cos(np.pi/6.0)
-            ubaymax = -(1.0 + math.sin(np.pi/6.0))
+            ubaxmax = 1.0 * math.cos(np.pi / 6.0)
+            ubaymax = -(1.0 + math.sin(np.pi / 6.0))
             if u == self.u1:
                 self.x1 = ubaxmax
                 self.y1 = ubaymax
@@ -97,8 +98,8 @@ class CuoWuJieXian(object):
     def imax_init(self, i):
         if i == 'Ia':
             ria = 0.5
-            iaxmax = math.sin(np.pi/12.0) * ria
-            iaymax = math.cos(np.pi/12.0) * ria
+            iaxmax = math.sin(np.pi / 12.0) * ria
+            iaymax = math.cos(np.pi / 12.0) * ria
             if i == self.i1:
                 self.x2 = iaxmax
                 self.y2 = iaymax
@@ -107,8 +108,8 @@ class CuoWuJieXian(object):
                 self.y4 = iaymax
         elif i == 'Ic':
             ric = 0.5
-            icxmax = -(math.cos(np.pi/12.0) * ric)
-            icymax = -(math.sin(np.pi/12.0) * ric)
+            icxmax = -(math.cos(np.pi / 12.0) * ric)
+            icymax = -(math.sin(np.pi / 12.0) * ric)
             if i == self.i1:
                 self.x2 = icxmax
                 self.y2 = icymax
@@ -117,8 +118,8 @@ class CuoWuJieXian(object):
                 self.y4 = icymax
         elif i == '-Ia':
             ria = 0.5
-            iaxmax = -(math.sin(np.pi/12.0) * ria)
-            iaymax = -(math.cos(np.pi/12.0) * ria)
+            iaxmax = -(math.sin(np.pi / 12.0) * ria)
+            iaymax = -(math.cos(np.pi / 12.0) * ria)
             if i == self.i1:
                 self.x2 = iaxmax
                 self.y2 = iaymax
@@ -127,8 +128,8 @@ class CuoWuJieXian(object):
                 self.y4 = iaymax
         elif i == '-Ic':
             ric = 0.5
-            icxmax = math.cos(np.pi/12.0) * ric
-            icymax = math.sin(np.pi/12.0) * ric
+            icxmax = math.cos(np.pi / 12.0) * ric
+            icymax = math.sin(np.pi / 12.0) * ric
 
             if i == self.i1:
                 self.x2 = icxmax
@@ -141,10 +142,10 @@ class CuoWuJieXian(object):
 
     def umax(self, u, uno):
         if u == 'Uab':
-            uabxmax = -(1.0 * math.cos(np.pi/6.0))
-            uabymax = 1.0 + math.sin(np.pi/6.0)
+            uabxmax = -(1.0 * math.cos(np.pi / 6.0))
+            uabymax = 1.0 + math.sin(np.pi / 6.0)
             plt.plot([0, uabxmax], [0, uabymax])
-            plt.text(-0.75, 1.43, u+uno)
+            plt.text(-0.75, 1.43, u + uno)
             plt.text(-0.22, 0.45, u'30°')
             if u == self.u1:
                 self.x1 = uabxmax
@@ -153,9 +154,9 @@ class CuoWuJieXian(object):
                 self.x3 = uabxmax
                 self.y3 = uabymax
         elif u == 'Ucb':
-            ucbxmax = - 2 * math.cos(np.pi/6.0) * 1.0
+            ucbxmax = - 2 * math.cos(np.pi / 6.0) * 1.0
             plt.plot([0, ucbxmax], [0, 0])
-            plt.text(-1.67, 0.05, u+uno)
+            plt.text(-1.67, 0.05, u + uno)
             if u == self.u1:
                 self.x1 = ucbxmax
                 self.y1 = 0
@@ -163,9 +164,9 @@ class CuoWuJieXian(object):
                 self.x3 = ucbxmax
                 self.y3 = 0
         elif u == 'Ubc':
-            ubcxmax = 2 * math.cos(np.pi/6.0) * 1.0
+            ubcxmax = 2 * math.cos(np.pi / 6.0) * 1.0
             plt.plot([0, ubcxmax], [0, 0])
-            plt.text(1.55, 0.06, u+uno)
+            plt.text(1.55, 0.06, u + uno)
             if u == self.u1:
                 self.x1 = ubcxmax
                 self.y1 = 0
@@ -173,10 +174,10 @@ class CuoWuJieXian(object):
                 self.x3 = ubcxmax
                 self.y3 = 0
         elif u == 'Uac':
-            uacxmax = 1.0 * math.cos(np.pi/6.0)
-            uacymax = 1.0 + math.sin(np.pi/6.0)
+            uacxmax = 1.0 * math.cos(np.pi / 6.0)
+            uacymax = 1.0 + math.sin(np.pi / 6.0)
             plt.plot([0, uacxmax], [0, uacymax])
-            plt.text(0.95, 1.38, u+uno)
+            plt.text(0.95, 1.38, u + uno)
             if u == self.u1:
                 self.x1 = uacxmax
                 self.y1 = uacymax
@@ -184,10 +185,10 @@ class CuoWuJieXian(object):
                 self.x3 = uacxmax
                 self.y3 = uacymax
         elif u == 'Uca':
-            ucaxmax = -(1.0 * math.cos(np.pi/6.0))
-            ucaymax = -(1.0 + math.sin(np.pi/6.0))
+            ucaxmax = -(1.0 * math.cos(np.pi / 6.0))
+            ucaymax = -(1.0 + math.sin(np.pi / 6.0))
             plt.plot([0, ucaxmax], [0, ucaymax])
-            plt.text(-0.72, -1.45, u+uno)
+            plt.text(-0.72, -1.45, u + uno)
             if u == self.u1:
                 self.x1 = ucaxmax
                 self.y1 = ucaymax
@@ -195,10 +196,10 @@ class CuoWuJieXian(object):
                 self.x3 = ucaxmax
                 self.y3 = ucaymax
         elif u == 'Uba':
-            ubaxmax = 1.0 * math.cos(np.pi/6.0)
-            ubaymax = -(1.0 + math.sin(np.pi/6.0))
+            ubaxmax = 1.0 * math.cos(np.pi / 6.0)
+            ubaymax = -(1.0 + math.sin(np.pi / 6.0))
             plt.plot([0, ubaxmax], [0, ubaymax])
-            plt.text(0.93, -1.45, u+uno)
+            plt.text(0.93, -1.45, u + uno)
             if u == self.u1:
                 self.x1 = ubaxmax
                 self.y1 = ubaymax
@@ -212,10 +213,10 @@ class CuoWuJieXian(object):
     def imax(self, i, ino):
         if i == 'Ia':
             ria = 0.5
-            iaxmax = math.sin(np.pi/12.0) * ria
-            iaymax = math.cos(np.pi/12.0) * ria
+            iaxmax = math.sin(np.pi / 12.0) * ria
+            iaymax = math.cos(np.pi / 12.0) * ria
             plt.plot([0, iaxmax], [0, iaymax])
-            plt.text(0.10, 0.62, i+ino)
+            plt.text(0.10, 0.62, i + ino)
             plt.text(0.01, 0.33, u'φ')
             if i == self.i1:
                 self.x2 = iaxmax
@@ -225,10 +226,10 @@ class CuoWuJieXian(object):
                 self.y4 = iaymax
         elif i == 'Ic':
             ric = 0.5
-            icxmax = -(math.cos(np.pi/12.0) * ric)
-            icymax = -(math.sin(np.pi/12.0) * ric)
+            icxmax = -(math.cos(np.pi / 12.0) * ric)
+            icymax = -(math.sin(np.pi / 12.0) * ric)
             plt.plot([0, icxmax], [0, icymax])
-            plt.text(-0.80, -0.18, i+ino)
+            plt.text(-0.80, -0.18, i + ino)
             plt.text(-0.38, -0.16, u'φ')
             if i == self.i1:
                 self.x2 = icxmax
@@ -238,10 +239,10 @@ class CuoWuJieXian(object):
                 self.y4 = icymax
         elif i == '-Ia':
             ria = 0.5
-            iaxmax = -(math.sin(np.pi/12.0) * ria)
-            iaymax = -(math.cos(np.pi/12.0) * ria)
+            iaxmax = -(math.sin(np.pi / 12.0) * ria)
+            iaymax = -(math.cos(np.pi / 12.0) * ria)
             plt.plot([0, iaxmax], [0, iaymax])
-            plt.text(-0.17, -0.62, i+ino)
+            plt.text(-0.17, -0.62, i + ino)
             plt.text(-0.07, -0.37, u'φ')
             if i == self.i1:
                 self.x2 = iaxmax
@@ -251,14 +252,14 @@ class CuoWuJieXian(object):
                 self.y4 = iaymax
         elif i == '-Ic':
             ric = 0.5
-            icxmax = math.cos(np.pi/12.0) * ric
-            icymax = math.sin(np.pi/12.0) * ric
+            icxmax = math.cos(np.pi / 12.0) * ric
+            icymax = math.sin(np.pi / 12.0) * ric
             plt.plot([0, icxmax], [0, icymax])
-            plt.text(0.58, 0.20, i+ino)
+            plt.text(0.58, 0.20, i + ino)
 
-            r3a = 1.0   # Uc的反向延长线
-            x3a = r3a * math.cos(np.pi/6.0)
-            y3a = r3a * math.sin(np.pi/6.0)
+            r3a = 1.0  # Uc的反向延长线
+            x3a = r3a * math.cos(np.pi / 6.0)
+            y3a = r3a * math.sin(np.pi / 6.0)
             plt.plot([0, x3a], [0, y3a], ':', color='g')
             plt.text(0.30, 0.12, u'φ')
 
@@ -272,11 +273,11 @@ class CuoWuJieXian(object):
             raise ValueError('您输入的电压顺序不正确，请核实后再输入！(注意大小写)')
 
     def angle(self):
-        unorm = 2 * math.cos(np.pi/6.0) * 1.0   # 模
+        unorm = 2 * math.cos(np.pi / 6.0) * 1.0  # 模
         inorm = 0.5
-        dot_product1 = self.x1 * self.x2 + self.y1 * self.y2   # 点乘
+        dot_product1 = self.x1 * self.x2 + self.y1 * self.y2  # 点乘
         dot_product2 = self.x3 * self.x4 + self.y3 * self.y4
-        cross_product1 = self.x1 * self.y2 - self.x2 * self.y1    # 叉乘
+        cross_product1 = self.x1 * self.y2 - self.x2 * self.y1  # 叉乘
         cross_product2 = self.x3 * self.y4 - self.x4 * self.y3
         cosp1 = dot_product1 / (unorm * inorm)  # 向量夹角公式
         cosp2 = dot_product2 / (unorm * inorm)
@@ -297,24 +298,24 @@ class CuoWuJieXian(object):
     def cosphi(self, anglep1_nophi, anglep2_nophi):
         pi_angle1 = math.radians(anglep1_nophi)
         pi_angle2 = math.radians(anglep2_nophi)
-        real_cospi12 = math.cos(pi_angle1) + math.cos(pi_angle2)    # P1+P2和差角展开前半部分cos
-        real_sinpi12 = math.sin(pi_angle1) + math.sin(pi_angle2)    # 后半部分sin
-        cospi12 = round(real_cospi12, 3)     # P1+P2和差角展开前半部分cos，保留2位小数
-        sinpi12 = round(real_sinpi12, 3)     # 后半部分sin保留2位小叔
+        real_cospi12 = math.cos(pi_angle1) + math.cos(pi_angle2)  # P1+P2和差角展开前半部分cos
+        real_sinpi12 = math.sin(pi_angle1) + math.sin(pi_angle2)  # 后半部分sin
+        cospi12 = round(real_cospi12, 3)  # P1+P2和差角展开前半部分cos，保留2位小数
+        sinpi12 = round(real_sinpi12, 3)  # 后半部分sin保留2位小叔
         if cospi12 == 0 and sinpi12 != 0:
             # p12 = str(sinpi12) + u'sinφ'
             if sinpi12 < 0:
-                self.k = str(round((math.sqrt(3)/real_sinpi12), 3)).replace('-', '') + u'cotφ'
+                self.k = str(round((math.sqrt(3) / real_sinpi12), 3)).replace('-', '') + u'cotφ'
             else:
-                self.k = '-' + str(round((math.sqrt(3)/real_sinpi12), 3)).replace('-', '') + u'cotφ'
+                self.k = '-' + str(round((math.sqrt(3) / real_sinpi12), 3)).replace('-', '') + u'cotφ'
         elif sinpi12 == 0 and cospi12 != 0:
             # p12 = str(cospi12) + u'cosφ'
-            self.k = str(round((math.sqrt(3)/real_cospi12), 3))
+            self.k = str(round((math.sqrt(3) / real_cospi12), 3))
         elif cospi12 == 0 and sinpi12 == 0:
             self.k = u'∞'
         else:
             if sinpi12 < 0:
-                zfh = '+'   # cos(a+b)展开的中间有负号，做个判断
+                zfh = '+'  # cos(a+b)展开的中间有负号，做个判断
             else:
                 zfh = '-'
             p12 = '(' + str(cospi12) + u'cosφ' + zfh + str(sinpi12).replace('-', '') + u'sinφ' + ')'
@@ -331,14 +332,14 @@ class CuoWuJieXian(object):
         plt.text(-0.05, 1.05, 'Ua')
 
         r2 = 1.0
-        x2 = r2 * math.cos(np.pi/6.0)
-        y2 = - r2 * math.sin(np.pi/6.0)
+        x2 = r2 * math.cos(np.pi / 6.0)
+        y2 = - r2 * math.sin(np.pi / 6.0)
         plt.plot([0, x2], [0, y2])
         plt.text(0.88, -0.55, 'Ub')
 
         r3 = 1.0
-        x3 = - r3 * math.cos(np.pi/6.0)
-        y3 = - r3 * math.sin(np.pi/6.0)
+        x3 = - r3 * math.cos(np.pi / 6.0)
+        y3 = - r3 * math.sin(np.pi / 6.0)
         plt.plot([0, x3], [0, y3])
         plt.text(-1.05, -0.58, 'Uc')
 
@@ -365,13 +366,13 @@ class CuoWuJieXian(object):
             _cosphi = math.cos(_phi)
         pi_angle1 = math.radians(anglep1_nophi)
         pi_angle2 = math.radians(anglep2_nophi)
-        real_cospi12 = math.cos(pi_angle1) + math.cos(pi_angle2)    # P1+P2和差角展开前半部分cos
-        real_sinpi12 = math.sin(pi_angle1) + math.sin(pi_angle2)    # 后半部分sin
+        real_cospi12 = math.cos(pi_angle1) + math.cos(pi_angle2)  # P1+P2和差角展开前半部分cos
+        real_sinpi12 = math.sin(pi_angle1) + math.sin(pi_angle2)  # 后半部分sin
         if round(real_cospi12, 5) == 0 and round(real_sinpi12, 5) != 0:
-            k = -math.sqrt(3)/real_sinpi12 * (_cosphi/_sinphi)
+            k = -math.sqrt(3) / real_sinpi12 * (_cosphi / _sinphi)
             k = round(k, 4)
         elif round(real_sinpi12, 5) == 0 and round(real_cospi12, 5) != 0:
-            k = math.sqrt(3)/real_cospi12
+            k = math.sqrt(3) / real_cospi12
             k = round(k, 4)
         elif round(real_cospi12, 5) == 0 and round(real_sinpi12, 5) == 0:
             k = u'∞'
@@ -469,7 +470,7 @@ class CWJXGUI(Tkinter.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        self.app_name.grid(column=0, row=0, columnspan=16)   # APP标题
+        self.app_name.grid(column=0, row=0, columnspan=16)  # APP标题
 
         self.xuanding.grid(column=0, row=8, padx=10, pady=3)  # ‘选定’
 
@@ -617,9 +618,9 @@ class CWJXGUI(Tkinter.Frame):
 
         cw1.pltpic()
 
-    pattern = re.compile('''(0\.0*[1-9]+)|(([1-8][0-9]|[1-9])(\.[0-9]+){0,1})''')
-
     def k_func(self):
+        pattern = re.compile(r'(0\.0*[1-9]+)|(([1-8][0-9]|[1-9])(\.[0-9]+){0,1})')
+        pattern2 = re.compile('''^0\.[0-9]*[1-9]$''')
         phi = self.phi_var.get()
         sinphi = self.sinphi_var.get()
         cosphi = self.cosphi_var.get()
@@ -629,20 +630,24 @@ class CWJXGUI(Tkinter.Frame):
             tkMessageBox.showinfo('输入错误', u'φ角的信息不要重复填写，请选择单独填写φ或者填写φ的正弦余弦')
         elif phi != '' and cosphi != '':
             tkMessageBox.showinfo('输入错误', u'φ角的信息不要重复填写，请选择单独填写φ或者填写φ的正弦余弦')
-        elif phi == '' and sinphi != '' and cosphi != '':
+        elif phi == '' and pattern2.match(sinphi) and pattern2.match(cosphi):
             _phi = 0
-            if float(sinphi) >= 1 or float(sinphi) <= 0 or float(cosphi) >= 1 or float(cosphi) <= 0:
-                tkMessageBox.showinfo(u'φ的正弦余弦值输入错误', u'φ的正弦余弦值必须在0-1之间')
-            else:
-                _sinphi = float(sinphi)
-                _cosphi = float(cosphi)
-        elif phi != '' and sinphi == '' and cosphi == '':
-            if 0 < float(phi) < 90:
+            # if float(sinphi) >= 1 or float(sinphi) <= 0 or float(cosphi) >= 1 or float(cosphi) <= 0:
+            # tkMessageBox.showinfo(u'φ的正弦余弦值输入错误', u'φ的正弦余弦值必须在0-1之间')
+            # else:
+            _sinphi = float(sinphi)
+            _cosphi = float(cosphi)
+        # elif phi != '' and sinphi == '' and cosphi == '':
+        elif pattern.match(phi) and sinphi == '' and cosphi == '':
+            # if 0 < float(phi) < 90:
+            if len(pattern.match(phi).group(0)) == len(phi):
                 _phi = float(phi)
                 _sinphi = ''
                 _cosphi = ''
             else:
-                tkMessageBox.showinfo(u'φ值输入错误', u'φ值必须在0-90度之间')
+                tkMessageBox.showinfo('输入有误', u'φ的信息输入有误，请仔细核对！')
+            # else:
+            # tkMessageBox.showinfo(u'φ值输入错误', u'φ值必须在0-90度之间')
         else:
             tkMessageBox.showinfo('输入有误', u'φ的信息输入有误，请仔细核对！')
         cw1 = CuoWuJieXian(self.uabcvar.get(), self.ii1var.get(), self.ii2var.get())
