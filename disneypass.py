@@ -88,9 +88,9 @@ def main(argv):
         return
     if len(urls) == 0:
         return
-    print urls
-    print len(urls)
-    print mp4urls
+    # print urls
+    # print len(urls)
+    # print mp4urls
 
     # Download
     print "need download %d photos and %d mp4" % (len(urls), len(mp4urls))
