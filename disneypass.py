@@ -4,15 +4,18 @@ import urllib
 import json
 import sys
 import getopt
+import os
+import zipfile
+import shutil
 
 
 def dlfile(url, count):
-    localpath = "image-download/%d" % (count)
+    localpath = "image-download/%d" % count
     urllib.urlretrieve(url, localpath)
 
 
 def dlmp4(url, count):
-    localpath = "image/m%d" % (count) + ".jpg"
+    localpath = "image/m%d" % count + ".jpg"
     urllib.urlretrieve(url, localpath)
 
 
@@ -94,6 +97,12 @@ def main(argv):
 
     # Download
     print "need download %d photos and %d mp4" % (len(urls), len(mp4urls))
+
+    if not os.path.isdir('image'):  # check the path
+        os.mkdir('image')
+    if not os.path.isdir('image-download'):
+        os.mkdir('image-download')
+
     with open('disney_retry.txt', 'r') as retry:
         download_begin = int(retry.readline())
     if download_begin:
@@ -124,6 +133,22 @@ def main(argv):
                     w.write(newjpg)
             except IndexError:
                 print 'It seems not to find ffd9ffd8.'
+
+    # Zip
+    print "ziping all the photos to Disney.zip..."
+    z = zipfile.ZipFile('Disney.zip', 'w', zipfile.ZIP_DEFLATED)
+    for d in os.listdir('image'):
+        z.write('image' + os.sep + d, d)
+    z.close()
+    print "zip done."
+
+    # Del
+    shutil.rmtree('image-download')
+    shutil.rmtree('image')
+    if not os.path.isdir('image-download'):
+        os.mkdir('image-download')
+    if not os.path.isdir('image'):
+        os.mkdir('image')
 
     with open('disney_retry.txt', 'w') as retry_refresh:
         retry_refresh.write('0')
