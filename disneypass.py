@@ -145,6 +145,7 @@ def main(argv):
     # Del
     shutil.rmtree('image-download')
     shutil.rmtree('image')
+    shutil.copy('Disney.zip', 'backup\\')
     if not os.path.isdir('image-download'):
         os.mkdir('image-download')
     if not os.path.isdir('image'):
