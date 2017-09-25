@@ -12,7 +12,7 @@ def dlfile(url, count):
 
 
 def dlmp4(url, count):
-    localpath = "image/%d" % (count) + ".mp4"
+    localpath = "image/m%d" % (count) + ".jpg"
     urllib.urlretrieve(url, localpath)
 
 
@@ -45,7 +45,7 @@ def getData(tokenId):
         currentPageIndex = currentPageIndex + 1
         for x in xrange(0, len(photos)):
             photo = photos[x]
-            if photo["mimeType"] == "mp4":
+            if photo["mimeType"] == "mp4" and photo["isPaid"] is False:
                 mp4thumbnail = photo["thumbnail"]
                 mp4x1024 = mp4thumbnail["x1024"]
                 mp4url = mp4x1024["url"]
@@ -94,13 +94,19 @@ def main(argv):
 
     # Download
     print "need download %d photos and %d mp4" % (len(urls), len(mp4urls))
-    for x in xrange(0, len(urls)):
+    with open('disney_retry.txt', 'r') as retry:
+        download_begin = int(retry.readline())
+    if download_begin:
+        print "retry to download %d..." % (download_begin + 1)
+
+    for x in xrange(download_begin, len(urls)):
         print "downloading photos... %d" % (x + 1)
+        with open('disney_retry.txt', 'w') as retry_w:
+            retry_w.write(str(x))
         dlfile(urls[x], x + 1)
     for x in xrange(0, len(mp4urls)):
-        print "downloading mp4... %d" % (x+1)
+        print "downloading mp4... %d" % (x + 1)
         dlmp4(mp4urls[x], x + 1)
-
     print 'download done.'
 
     # Analysis
@@ -118,6 +124,9 @@ def main(argv):
                     w.write(newjpg)
             except IndexError:
                 print 'It seems not to find ffd9ffd8.'
+
+    with open('disney_retry.txt', 'w') as retry_refresh:
+        retry_refresh.write('0')
 
     print 'All Done.'
 
